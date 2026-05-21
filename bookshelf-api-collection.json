@@ -1,0 +1,1321 @@
+{
+	"info": {
+		"_postman_id": "a3880ca2-e18a-485b-8c2a-21025c045ce2",
+		"name": "Bookshelf API",
+		"description": "Collection completa com testes para todas as rotas da Bookshelf API.\n\nRoda as pastas em ordem: **Autores → Livros → Resenhas → Actuator**.\n\nVariáveis de ambiente são salvas automaticamente pelos testes (autorId, livroId, resenhaId).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "37583138"
+	},
+	"item": [
+		{
+			"name": "Autores",
+			"item": [
+				{
+					"name": "GET Listar todos os autores",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Resposta é JSON', () => pm.response.to.be.json);",
+									"pm.test('Tem campo content (paginação)', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body).to.have.property('content');",
+									"  pm.expect(body.content).to.be.an('array');",
+									"});",
+									"pm.test('Tem campos de paginação', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body).to.have.property('totalElements');",
+									"  pm.expect(body).to.have.property('totalPages');",
+									"  pm.expect(body).to.have.property('size');",
+									"});",
+									"pm.test('Autores têm campos obrigatórios', () => {",
+									"  const autores = pm.response.json().content;",
+									"  if (autores.length > 0) {",
+									"    pm.expect(autores[0]).to.have.property('id');",
+									"    pm.expect(autores[0]).to.have.property('nome');",
+									"    pm.expect(autores[0]).to.have.property('totalLivros');",
+									"  }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/autores?page=0&size=10&sort=nome&direction=asc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"autores"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sort",
+									"value": "nome"
+								},
+								{
+									"key": "direction",
+									"value": "asc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Listar autores — paginação customizada",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Página tem no máximo 2 itens', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body.content.length).to.be.at.most(2);",
+									"});",
+									"pm.test('Size é 2', () => {",
+									"  pm.expect(pm.response.json().size).to.equal(2);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/autores?page=0&size=2&sort=nome&direction=desc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"autores"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "2"
+								},
+								{
+									"key": "sort",
+									"value": "nome"
+								},
+								{
+									"key": "direction",
+									"value": "desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Buscar autor por ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Tem campo id', () => pm.expect(pm.response.json()).to.have.property('id'));",
+									"pm.test('Tem campo nome', () => pm.expect(pm.response.json()).to.have.property('nome'));",
+									"pm.test('HATEOAS: tem _links', () => {",
+									"  pm.expect(pm.response.json()).to.have.property('_links');",
+									"});",
+									"pm.test('HATEOAS: tem link self', () => {",
+									"  const links = pm.response.json()._links;",
+									"  pm.expect(links).to.have.property('self');",
+									"});",
+									"pm.test('HATEOAS: tem link autores', () => {",
+									"  const links = pm.response.json()._links;",
+									"  pm.expect(links).to.have.property('autores');",
+									"});",
+									"pm.test('HATEOAS: tem link livros', () => {",
+									"  const links = pm.response.json()._links;",
+									"  pm.expect(links).to.have.property('livros');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/autores/{{autorId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"autores",
+								"{{autorId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Buscar autores por nome",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Retorna resultados paginados', () => {",
+									"  pm.expect(pm.response.json()).to.have.property('content');",
+									"});",
+									"pm.test('Resultado contém Machado', () => {",
+									"  const content = pm.response.json().content;",
+									"  if (content.length > 0) {",
+									"    const nomes = content.map(a => a.nome.toLowerCase());",
+									"    pm.expect(nomes.some(n => n.includes('machado'))).to.be.true;",
+									"  }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/autores/buscar?nome=Machado",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"autores",
+								"buscar"
+							],
+							"query": [
+								{
+									"key": "nome",
+									"value": "Machado"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Buscar autores por nacionalidade",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Retorna paginação', () => {",
+									"  pm.expect(pm.response.json()).to.have.property('content');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/autores/nacionalidade/Brasileiro",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"autores",
+								"nacionalidade",
+								"Brasileiro"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST Criar autor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+									"pm.test('Retorna o autor criado', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body).to.have.property('id');",
+									"  pm.expect(body.nome).to.equal('José Saramago');",
+									"});",
+									"pm.test('Header Location presente', () => {",
+									"  pm.expect(pm.response.headers.get('Location')).to.not.be.null;",
+									"});",
+									"pm.test('HATEOAS presente', () => {",
+									"  pm.expect(pm.response.json()).to.have.property('_links');",
+									"});",
+									"// Salva o ID criado para usar nos próximos testes",
+									"const novoId = pm.response.json().id;",
+									"if (novoId) pm.collectionVariables.set('autorIdCriado', novoId);",
+									"console.log('Autor criado com ID:', novoId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"José Saramago\",\n  \"nacionalidade\": \"Português\",\n  \"bio\": \"Escritor português, ganhador do Prêmio Nobel de Literatura em 1998.\",\n  \"dataNascimento\": \"1922-11-16\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/autores",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"autores"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT Atualizar autor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Bio foi atualizada', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body.bio).to.include('Nobel');",
+									"});",
+									"pm.test('HATEOAS presente', () => {",
+									"  pm.expect(pm.response.json()).to.have.property('_links');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"José Saramago\",\n  \"nacionalidade\": \"Português\",\n  \"bio\": \"Escritor português, Nobel de Literatura 1998. Autor de O Evangelho Segundo Jesus Cristo.\",\n  \"dataNascimento\": \"1922-11-16\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/autores/{{autorIdCriado}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"autores",
+								"{{autorIdCriado}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Livros",
+			"item": [
+				{
+					"name": "GET Listar todos os livros",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Retorna paginação', () => {",
+									"  pm.expect(pm.response.json()).to.have.property('content');",
+									"});",
+									"pm.test('Livros têm mediaNotas', () => {",
+									"  const livros = pm.response.json().content;",
+									"  if (livros.length > 0) {",
+									"    pm.expect(livros[0]).to.have.property('mediaNotas');",
+									"    pm.expect(livros[0]).to.have.property('totalResenhas');",
+									"  }",
+									"});",
+									"pm.test('Livros têm autorNome', () => {",
+									"  const livros = pm.response.json().content;",
+									"  if (livros.length > 0) {",
+									"    pm.expect(livros[0]).to.have.property('autorNome');",
+									"  }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/livros?page=0&size=10&sort=titulo&direction=asc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"livros"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sort",
+									"value": "titulo"
+								},
+								{
+									"key": "direction",
+									"value": "asc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Buscar livro por ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Tem campos do livro', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body).to.have.property('id');",
+									"  pm.expect(body).to.have.property('titulo');",
+									"  pm.expect(body).to.have.property('sinopse');",
+									"});",
+									"pm.test('HATEOAS: tem _links', () => {",
+									"  pm.expect(pm.response.json()).to.have.property('_links');",
+									"});",
+									"pm.test('HATEOAS: tem link autor', () => {",
+									"  pm.expect(pm.response.json()._links).to.have.property('autor');",
+									"});",
+									"pm.test('HATEOAS: tem link resenhas', () => {",
+									"  pm.expect(pm.response.json()._links).to.have.property('resenhas');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/livros/{{livroId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"livros",
+								"{{livroId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Buscar livros por título",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Projection: sem sinopse, com mediaNotas', () => {",
+									"  const livros = pm.response.json().content;",
+									"  if (livros.length > 0) {",
+									"    pm.expect(livros[0]).to.have.property('mediaNotas');",
+									"    pm.expect(livros[0]).to.not.have.property('isbn');",
+									"  }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/livros/buscar?titulo=Dom",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"livros",
+								"buscar"
+							],
+							"query": [
+								{
+									"key": "titulo",
+									"value": "Dom"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Buscar livros por gênero",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Retorna lista paginada', () => {",
+									"  pm.expect(pm.response.json()).to.have.property('content');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/livros/genero/Romance",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"livros",
+								"genero",
+								"Romance"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Livros por autor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Todos os livros são do mesmo autor', () => {",
+									"  const livros = pm.response.json().content;",
+									"  const autorId = parseInt(pm.collectionVariables.get('autorId'));",
+									"  livros.forEach(l => pm.expect(l.autorId).to.equal(autorId));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/livros/autor/{{autorId}}?page=0&size=5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"livros",
+								"autor",
+								"{{autorId}}"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Livros por ano",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Livros têm o ano correto', () => {",
+									"  const livros = pm.response.json().content;",
+									"  livros.forEach(l => pm.expect(l.anoPublicacao).to.equal(1899));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/livros/ano/1899",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"livros",
+								"ano",
+								"1899"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST Criar livro",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+									"pm.test('Livro criado com campos corretos', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body).to.have.property('id');",
+									"  pm.expect(body.titulo).to.equal('O Ensaio sobre a Cegueira');",
+									"  pm.expect(body.mediaNotas).to.equal(0);",
+									"  pm.expect(body.totalResenhas).to.equal(0);",
+									"});",
+									"pm.test('Header Location presente', () => {",
+									"  pm.expect(pm.response.headers.get('Location')).to.not.be.null;",
+									"});",
+									"pm.test('HATEOAS presente', () => {",
+									"  pm.expect(pm.response.json()).to.have.property('_links');",
+									"});",
+									"const novoId = pm.response.json().id;",
+									"if (novoId) pm.collectionVariables.set('livroIdCriado', novoId);",
+									"console.log('Livro criado com ID:', novoId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"titulo\": \"O Ensaio sobre a Cegueira\",\n  \"isbn\": \"978-85-359-0300-0\",\n  \"anoPublicacao\": 1995,\n  \"genero\": \"Ficção\",\n  \"paginas\": 310,\n  \"sinopse\": \"Uma epidemia de cegueira branca se espalha por uma cidade, testando a humanidade de seus habitantes.\",\n  \"autorId\": {{autorId}}\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/livros",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"livros"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT Atualizar livro",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Gênero foi atualizado', () => {",
+									"  pm.expect(pm.response.json().genero).to.equal('Ficção Distópica');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"titulo\": \"Ensaio sobre a Cegueira\",\n  \"isbn\": \"978-85-359-0300-0\",\n  \"anoPublicacao\": 1995,\n  \"genero\": \"Ficção Distópica\",\n  \"paginas\": 310,\n  \"sinopse\": \"Epidemia de cegueira branca testa a humanidade. Obra-prima de Saramago.\",\n  \"autorId\": {{autorId}}\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/livros/{{livroIdCriado}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"livros",
+								"{{livroIdCriado}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE Deletar livro criado",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 204 No Content', () => pm.response.to.have.status(204));",
+									"pm.test('Corpo vazio', () => pm.expect(pm.response.text()).to.be.empty);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/livros/{{livroIdCriado}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"livros",
+								"{{livroIdCriado}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Resenhas",
+			"item": [
+				{
+					"name": "GET Listar todas as resenhas",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Retorna paginação', () => {",
+									"  pm.expect(pm.response.json()).to.have.property('content');",
+									"});",
+									"pm.test('Resenhas têm campos obrigatórios', () => {",
+									"  const resenhas = pm.response.json().content;",
+									"  if (resenhas.length > 0) {",
+									"    pm.expect(resenhas[0]).to.have.property('nota');",
+									"    pm.expect(resenhas[0]).to.have.property('temSpoiler');",
+									"    pm.expect(resenhas[0]).to.have.property('livroTitulo');",
+									"  }",
+									"});",
+									"pm.test('Nota está entre 1 e 5', () => {",
+									"  const resenhas = pm.response.json().content;",
+									"  resenhas.forEach(r => {",
+									"    pm.expect(r.nota).to.be.at.least(1);",
+									"    pm.expect(r.nota).to.be.at.most(5);",
+									"  });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/resenhas?page=0&size=10&sort=nota&direction=desc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"resenhas"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sort",
+									"value": "nota"
+								},
+								{
+									"key": "direction",
+									"value": "desc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Buscar resenha por ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('HATEOAS: tem _links', () => {",
+									"  pm.expect(pm.response.json()).to.have.property('_links');",
+									"});",
+									"pm.test('HATEOAS: tem link livro', () => {",
+									"  pm.expect(pm.response.json()._links).to.have.property('livro');",
+									"});",
+									"pm.test('temSpoiler é boolean', () => {",
+									"  pm.expect(typeof pm.response.json().temSpoiler).to.equal('boolean');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/resenhas/{{resenhaId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"resenhas",
+								"{{resenhaId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Resenhas por livro",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Todas as resenhas são do mesmo livro', () => {",
+									"  const resenhas = pm.response.json().content;",
+									"  const livroId = parseInt(pm.collectionVariables.get('livroId'));",
+									"  resenhas.forEach(r => pm.expect(r.livroId).to.equal(livroId));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/resenhas/livro/{{livroId}}?page=0&size=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"resenhas",
+								"livro",
+								"{{livroId}}"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Resenhas sem spoiler por livro 🎯",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Nenhuma resenha tem spoiler', () => {",
+									"  const resenhas = pm.response.json().content;",
+									"  resenhas.forEach(r => pm.expect(r.temSpoiler).to.be.false);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/resenhas/livro/{{livroId}}/sem-spoiler",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"resenhas",
+								"livro",
+								"{{livroId}}",
+								"sem-spoiler"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Resenhas por nota",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Todas as resenhas têm nota 5', () => {",
+									"  const resenhas = pm.response.json().content;",
+									"  resenhas.forEach(r => pm.expect(r.nota).to.equal(5));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/resenhas/nota/5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"resenhas",
+								"nota",
+								"5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST Criar resenha",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 201 Created', () => pm.response.to.have.status(201));",
+									"pm.test('Resenha criada com dados corretos', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body).to.have.property('id');",
+									"  pm.expect(body.nota).to.equal(5);",
+									"  pm.expect(body.temSpoiler).to.be.false;",
+									"  pm.expect(body.livroTitulo).to.not.be.null;",
+									"});",
+									"pm.test('Header Location presente', () => {",
+									"  pm.expect(pm.response.headers.get('Location')).to.not.be.null;",
+									"});",
+									"pm.test('HATEOAS: tem link livro e resenhas-do-livro', () => {",
+									"  const links = pm.response.json()._links;",
+									"  pm.expect(links).to.have.property('livro');",
+									"  pm.expect(links).to.have.property('resenhas-do-livro');",
+									"});",
+									"const novoId = pm.response.json().id;",
+									"if (novoId) pm.collectionVariables.set('resenhaIdCriada', novoId);",
+									"console.log('Resenha criada com ID:', novoId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"titulo\": \"Leitura impactante\",\n  \"conteudo\": \"Dom Casmurro é uma obra que te prende do início ao fim. A narrativa de Bentinho é magistral e a dúvida sobre Capitu permanece até a última página.\",\n  \"nota\": 5,\n  \"temSpoiler\": false,\n  \"livroId\": {{livroId}}\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/resenhas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"resenhas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT Atualizar resenha",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Título foi atualizado', () => {",
+									"  pm.expect(pm.response.json().titulo).to.include('atualizado');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"titulo\": \"Leitura impactante — atualizado\",\n  \"conteudo\": \"Reli e mudei levemente minha opinião. Dom Casmurro é ainda mais complexo do que parecia na primeira leitura.\",\n  \"nota\": 5,\n  \"temSpoiler\": false,\n  \"livroId\": {{livroId}}\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/resenhas/{{resenhaIdCriada}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"resenhas",
+								"{{resenhaIdCriada}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE Deletar resenha criada",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 204 No Content', () => pm.response.to.have.status(204));",
+									"pm.test('Corpo vazio', () => pm.expect(pm.response.text()).to.be.empty);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/resenhas/{{resenhaIdCriada}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"resenhas",
+								"{{resenhaIdCriada}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Actuator",
+			"item": [
+				{
+					"name": "GET Health",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Status UP', () => {",
+									"  pm.expect(pm.response.json().status).to.equal('UP');",
+									"});",
+									"pm.test('Detalhes de componentes presentes', () => {",
+									"  pm.expect(pm.response.json()).to.have.property('components');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('App info presente', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body).to.have.property('app');",
+									"  pm.expect(body.app).to.have.property('name');",
+									"  pm.expect(body.app).to.have.property('version');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/info",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"info"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Metrics",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Lista de métricas presente', () => {",
+									"  pm.expect(pm.response.json()).to.have.property('names');",
+									"  pm.expect(pm.response.json().names).to.be.an('array').that.is.not.empty;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/metrics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"metrics"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Metrics — JVM memory",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Métrica tem valor numérico', () => {",
+									"  const measurements = pm.response.json().measurements;",
+									"  pm.expect(measurements[0].value).to.be.a('number').above(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/metrics/jvm.memory.used",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"metrics",
+								"jvm.memory.used"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET Caches",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Caches registrados', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body).to.have.property('cacheManagers');",
+									"});",
+									"pm.test('Cache de livros existe', () => {",
+									"  const json = JSON.stringify(pm.response.json());",
+									"  pm.expect(json).to.include('livros');",
+									"});",
+									"pm.test('Cache de autores existe', () => {",
+									"  const json = JSON.stringify(pm.response.json());",
+									"  pm.expect(json).to.include('autores');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/caches",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"caches"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "autorId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "livroId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "resenhaId",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}
